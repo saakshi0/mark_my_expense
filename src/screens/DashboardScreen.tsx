@@ -5,7 +5,6 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    RefreshControl,
     ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +22,6 @@ import { getLast7Days, getStartOfMonth, getToday, formatCurrency } from '../util
 export const DashboardScreen: React.FC = () => {
     const { colors } = useTheme();
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [showAddExpense, setShowAddExpense] = useState(false);
 
     const [weeklyData, setWeeklyData] = useState<CategorySummary[]>([]);
@@ -68,7 +66,6 @@ export const DashboardScreen: React.FC = () => {
             console.error('Failed to load dashboard data:', error);
         } finally {
             setLoading(false);
-            setRefreshing(false);
         }
     }, []);
 
@@ -130,11 +127,6 @@ export const DashboardScreen: React.FC = () => {
         setShowAddExpense(true);
     };
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        loadData();
-    };
-
     if (loading) {
         return (
             <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -157,14 +149,6 @@ export const DashboardScreen: React.FC = () => {
             <ScrollView
                 style={styles.content}
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={[colors.primary]}
-                        tintColor={colors.primary}
-                    />
-                }
             >
                 {/* Summary Cards */}
                 <View style={styles.summaryRow}>
@@ -333,12 +317,12 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     bottomPadding: {
-        height: 100,
+        height: 120,
     },
     fab: {
         position: 'absolute',
         right: 20,
-        bottom: 30,
+        bottom: 110,
         width: 60,
         height: 60,
         borderRadius: 30,

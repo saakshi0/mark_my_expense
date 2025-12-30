@@ -9,7 +9,6 @@ import {
     Modal,
     Alert,
     ActivityIndicator,
-    RefreshControl,
     SafeAreaView,
     ScrollView,
 } from 'react-native';
@@ -26,7 +25,6 @@ import { formatCurrency } from '../utils/dateUtils';
 export const AccountsScreen: React.FC = () => {
     const { colors } = useTheme();
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [accounts, setAccounts] = useState<AccountSummary[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEraseModal, setShowEraseModal] = useState(false);
@@ -46,7 +44,6 @@ export const AccountsScreen: React.FC = () => {
             console.error('Failed to load accounts:', error);
         } finally {
             setLoading(false);
-            setRefreshing(false);
         }
     }, []);
 
@@ -113,11 +110,6 @@ export const AccountsScreen: React.FC = () => {
         } finally {
             setIsErasing(false);
         }
-    };
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        loadData();
     };
 
     const renderHeader = () => (
@@ -201,16 +193,8 @@ export const AccountsScreen: React.FC = () => {
                 ListHeaderComponent={accounts.length > 0 ? renderHeader : null}
                 ListEmptyComponent={renderEmpty}
                 ListFooterComponent={renderFooter}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={[colors.primary]}
-                        tintColor={colors.primary}
-                    />
-                }
             />
 
             {/* Add Account Modal */}

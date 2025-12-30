@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
     View,
     Text,
@@ -24,25 +25,40 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 }) => {
     const { colors } = useTheme();
 
-    const adjustStartDate = (days: number) => {
-        const newDate = new Date(startDate);
-        newDate.setDate(newDate.getDate() + days);
-        if (newDate <= endDate) {
-            onStartDateChange(newDate);
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
+
+    const onStartChange = (event: any, selectedDate?: Date) => {
+        setShowStartPicker(false);
+        if (selectedDate) {
+            // Ensure start date is not after end date
+            if (selectedDate > endDate) {
+                // If start is after end, maybe just don't update or set end to start?
+                // Better UX: just don't update or update and let user fix end. 
+                // Following existing logic: newDate <= endDate
+                return;
+            }
+            onStartDateChange(selectedDate);
         }
     };
 
-    const adjustEndDate = (days: number) => {
-        const newDate = new Date(endDate);
-        newDate.setDate(newDate.getDate() + days);
-        if (newDate >= startDate && newDate <= new Date()) {
-            onEndDateChange(newDate);
+    const onEndChange = (event: any, selectedDate?: Date) => {
+        setShowEndPicker(false);
+        if (selectedDate) {
+            // Ensure end date is not before start date and not in future
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+
+            if (selectedDate < startDate || selectedDate > today) {
+                return;
+            }
+            onEndDateChange(selectedDate);
         }
     };
 
     const setPreset = (preset: 'week' | 'month' | '3months' | 'all') => {
         const today = new Date();
-        today.setHours(23, 59, 59, 999);
+        // today.setHours(23, 59, 59, 999); // No need to set time strict here, passing Date object is enough usually, but keeping consistency
 
         let start = new Date();
 
@@ -54,14 +70,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 start = new Date(today.getFullYear(), today.getMonth(), 1);
                 break;
             case '3months':
-                start = new Date(today.getFullYear(), today.getMonth() - 2, 1); // Current month - 2 gives 3 months span (e.g., Oct, Nov, Dec)
+                start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
                 break;
             case 'all':
                 start = new Date(2020, 0, 1);
                 break;
         }
 
-        start.setHours(0, 0, 0, 0);
+        // start.setHours(0, 0, 0, 0);
         onStartDateChange(start);
         onEndDateChange(today);
     };
@@ -99,47 +115,60 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             {/* Date Range Selector */}
             <View style={styles.dateRange}>
                 {/* Start Date */}
-                <View style={[styles.dateBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <TouchableOpacity onPress={() => adjustStartDate(-1)} style={styles.arrow}>
-                        <Ionicons name="chevron-back" size={18} color={colors.primary} />
-                    </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.dateBox, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    onPress={() => setShowStartPicker(true)}
+                >
                     <View style={styles.dateContent}>
                         <Text style={[styles.dateLabel, { color: colors.textMuted }]}>From</Text>
                         <Text style={[styles.dateValue, { color: colors.text }]}>
                             {formatDateShort(startDate)}
                         </Text>
                     </View>
-                    <TouchableOpacity onPress={() => adjustStartDate(1)} style={styles.arrow}>
-                        <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-                    </TouchableOpacity>
-                </View>
+                    <Ionicons name="calendar-outline" size={18} color={colors.primary} style={styles.calendarIcon} />
+                </TouchableOpacity>
 
                 <Ionicons name="arrow-forward" size={20} color={colors.textMuted} />
 
                 {/* End Date */}
-                <View style={[styles.dateBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <TouchableOpacity onPress={() => adjustEndDate(-1)} style={styles.arrow}>
-                        <Ionicons name="chevron-back" size={18} color={colors.primary} />
-                    </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.dateBox, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    onPress={() => setShowEndPicker(true)}
+                >
                     <View style={styles.dateContent}>
                         <Text style={[styles.dateLabel, { color: colors.textMuted }]}>To</Text>
                         <Text style={[styles.dateValue, { color: colors.text }]}>
                             {formatDateShort(endDate)}
                         </Text>
                     </View>
-                    <TouchableOpacity
-                        onPress={() => adjustEndDate(1)}
-                        style={styles.arrow}
-                        disabled={endDate.toDateString() === new Date().toDateString()}
-                    >
-                        <Ionicons
-                            name="chevron-forward"
-                            size={18}
-                            color={endDate.toDateString() === new Date().toDateString() ? colors.textMuted : colors.primary}
-                        />
-                    </TouchableOpacity>
-                </View>
+                    <Ionicons name="calendar-outline" size={18} color={colors.primary} style={styles.calendarIcon} />
+                </TouchableOpacity>
             </View>
+
+            {showStartPicker && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={startDate}
+                    mode="date"
+                    is24Hour={true}
+                    display="default"
+                    onChange={onStartChange}
+                    maximumDate={endDate}
+                />
+            )}
+
+            {showEndPicker && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={endDate}
+                    mode="date"
+                    is24Hour={true}
+                    display="default"
+                    onChange={onEndChange}
+                    minimumDate={startDate}
+                    maximumDate={new Date()}
+                />
+            )}
         </View>
     );
 };
@@ -175,13 +204,14 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         overflow: 'hidden',
     },
-    arrow: {
-        padding: 10,
+    calendarIcon: {
+        marginRight: 12,
     },
     dateContent: {
         flex: 1,
-        alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: 12,
+        paddingLeft: 16,
+        alignItems: 'flex-start',
     },
     dateLabel: {
         fontSize: 10,

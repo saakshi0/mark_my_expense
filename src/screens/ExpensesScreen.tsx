@@ -5,7 +5,6 @@ import {
     StyleSheet,
     FlatList,
     ActivityIndicator,
-    RefreshControl,
     Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -25,7 +24,6 @@ import { getLast7Days, getToday, formatCurrency } from '../utils/dateUtils';
 export const ExpensesScreen: React.FC = () => {
     const { colors } = useTheme();
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
 
     const [startDate, setStartDate] = useState(getLast7Days());
     const [endDate, setEndDate] = useState(getToday());
@@ -58,7 +56,6 @@ export const ExpensesScreen: React.FC = () => {
             console.error('Failed to load expenses:', error);
         } finally {
             setLoading(false);
-            setRefreshing(false);
         }
     }, [startDate, endDate, selectedAccountId]);
 
@@ -67,11 +64,6 @@ export const ExpensesScreen: React.FC = () => {
             loadData();
         }, [loadData])
     );
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        loadData();
-    };
 
     const handleExpensePress = (expense: ExpenseWithAccount) => {
         setSelectedExpense(expense);
@@ -222,16 +214,8 @@ export const ExpensesScreen: React.FC = () => {
                 )}
                 ListHeaderComponent={renderHeader}
                 ListEmptyComponent={renderEmpty}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        colors={[colors.primary]}
-                        tintColor={colors.primary}
-                    />
-                }
             />
 
             <AddExpenseModal

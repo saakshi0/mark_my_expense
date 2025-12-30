@@ -15,21 +15,24 @@ export const AppNavigator: React.FC = () => {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
+                tabBarShowLabel: false,
                 tabBarStyle: {
-                    backgroundColor: colors.tabBar,
-                    borderTopColor: colors.border,
-                    borderTopWidth: 1,
-                    paddingBottom: 8,
-                    paddingTop: 8,
-                    height: 70,
+                    position: 'absolute',
+                    bottom: 25,
+                    left: 20,
+                    right: 20,
+                    elevation: 5,
+                    backgroundColor: colors.surface,
+                    borderRadius: 25,
+                    height: 60,
+                    borderTopWidth: 0,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.5,
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.tabBarInactive,
-                tabBarLabelStyle: {
-                    fontSize: 11,
-                    fontWeight: '600',
-                    marginTop: 4,
-                },
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName: keyof typeof Ionicons.glyphMap;
 
@@ -47,23 +50,13 @@ export const AppNavigator: React.FC = () => {
                             iconName = 'home-outline';
                     }
 
-                    return <Ionicons name={iconName} size={24} color={color} />;
+                    return <Ionicons name={iconName} size={28} color={color} style={{ marginBottom: -3 }} />;
                 },
             })}
         >
-            <Tab.Screen
-                name="Dashboard"
-                component={DashboardScreen}
-                options={{ tabBarLabel: 'Home' }}
-            />
-            <Tab.Screen
-                name="Expenses"
-                component={ExpensesScreen}
-            />
-            <Tab.Screen
-                name="Accounts"
-                component={AccountsScreen}
-            />
+            <Tab.Screen name="Dashboard" component={DashboardScreen} />
+            <Tab.Screen name="Expenses" component={ExpensesScreen} />
+            <Tab.Screen name="Accounts" component={AccountsScreen} />
         </Tab.Navigator>
     );
 };
