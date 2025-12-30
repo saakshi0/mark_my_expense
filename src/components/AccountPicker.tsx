@@ -7,10 +7,12 @@ import {
     TouchableOpacity,
     FlatList,
     SafeAreaView,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { Account } from '../types';
+import { getBankIcon } from '../utils/bankIcons';
 
 interface AccountPickerProps {
     accounts: Account[];
@@ -42,8 +44,12 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
                 onPress={() => setVisible(true)}
             >
                 <View style={styles.selectorContent}>
-                    <View style={[styles.iconBox, { backgroundColor: colors.primary + '15' }]}>
-                        <Ionicons name="wallet" size={20} color={colors.primary} />
+                    <View style={[styles.iconBox, { backgroundColor: 'transparent' }]}>
+                        <Image
+                            source={getBankIcon(selectedAccount?.name || '')}
+                            style={styles.bankIconSmall}
+                            resizeMode="contain"
+                        />
                     </View>
                     <Text style={[
                         styles.selectorText,
@@ -95,8 +101,12 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
                                         ]}
                                         onPress={() => handleSelect(item.id)}
                                     >
-                                        <View style={[styles.accountIcon, { backgroundColor: colors.primary + '15' }]}>
-                                            <Ionicons name="wallet" size={24} color={colors.primary} />
+                                        <View style={[styles.accountIcon, { backgroundColor: 'transparent' }]}>
+                                            <Image
+                                                source={getBankIcon(item.name)}
+                                                style={styles.bankIconLarge}
+                                                resizeMode="contain"
+                                            />
                                         </View>
                                         <View style={styles.accountDetails}>
                                             <Text style={[styles.accountName, { color: colors.text }]}>
@@ -141,6 +151,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
+    },
+    bankIconSmall: {
+        width: 30,
+        height: 30,
+    },
+    bankIconLarge: {
+        width: 40,
+        height: 40,
     },
     selectorText: {
         fontSize: 15,

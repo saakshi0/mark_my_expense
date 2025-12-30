@@ -11,12 +11,13 @@ import {
     KeyboardAvoidingView,
     Platform,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { CategoryPicker } from './CategoryPicker';
 import { AccountPicker } from './AccountPicker';
-import { Account } from '../types';
+import { Account, ExpenseWithAccount } from '../types';
 import { formatDate } from '../utils/dateUtils';
 
 interface AddExpenseModalProps {
@@ -29,14 +30,18 @@ interface AddExpenseModalProps {
         date: Date;
         description: string;
     }) => Promise<void>;
+    onDelete?: () => Promise<void>;
     accounts: Account[];
+    expense?: ExpenseWithAccount | null;
 }
 
 export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     visible,
     onClose,
     onSubmit,
+    onDelete,
     accounts,
+    expense,
 }) => {
     const { colors } = useTheme();
     const [amount, setAmount] = useState('');
@@ -45,18 +50,27 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     const [date, setDate] = useState(new Date());
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     // Reset form when modal opens
     useEffect(() => {
         if (visible) {
-            setAmount('');
-            setCategory('food');
-            setAccountId(accounts.length > 0 ? accounts[0].id : null);
-            setDate(new Date());
-            setDescription('');
+            if (expense) {
+                setAmount(expense.amount.toString());
+                setCategory(expense.category);
+                setAccountId(expense.account_id);
+                setDate(new Date(expense.date));
+                setDescription(expense.description || '');
+            } else {
+                setAmount('');
+                setCategory('food');
+                setAccountId(accounts.length > 0 ? accounts[0].id : null);
+                setDate(new Date());
+                setDescription('');
+            }
         }
-    }, [visible, accounts]);
+    }, [visible, accounts, expense]);
 
     const handleSubmit = async () => {
         if (!amount || parseFloat(amount) <= 0) {
@@ -79,10 +93,37 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
             });
             onClose();
         } catch (error) {
-            Alert.alert('Error', 'Failed to add expense');
+            Alert.alert('Error', expense ? 'Failed to update expense' : 'Failed to add expense');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDelete = async () => {
+        if (!onDelete) return;
+
+        Alert.alert(
+            'Delete Expense',
+            'Are you sure you want to delete this expense?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setDeleting(true);
+                        try {
+                            await onDelete();
+                            onClose();
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to delete expense');
+                        } finally {
+                            setDeleting(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     const adjustDate = (days: number) => {
@@ -111,9 +152,19 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                             <Ionicons name="close" size={24} color={colors.text} />
                         </TouchableOpacity>
                         <Text style={[styles.headerTitle, { color: colors.text }]}>
-                            Add Expense
+                            {expense ? 'Edit Expense' : 'Add Expense'}
                         </Text>
-                        <View style={styles.headerRight} />
+                        <View style={styles.headerRight}>
+                            {expense && onDelete && (
+                                <TouchableOpacity onPress={handleDelete} disabled={deleting}>
+                                    {deleting ? (
+                                        <ActivityIndicator size="small" color={colors.error} />
+                                    ) : (
+                                        <Ionicons name="trash-outline" size={22} color={colors.error} />
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                        </View>
                     </View>
 
                     <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -210,7 +261,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                         >
                             <Ionicons name="add-circle" size={22} color="#FFFFFF" />
                             <Text style={styles.submitButtonText}>
-                                {loading ? 'Adding...' : 'Add Expense'}
+                                {loading ? 'Saving...' : (expense ? 'Save Changes' : 'Add Expense')}
                             </Text>
                         </TouchableOpacity>
                     </View>

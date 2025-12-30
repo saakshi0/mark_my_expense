@@ -6,6 +6,7 @@ import {
     FlatList,
     ActivityIndicator,
     RefreshControl,
+    Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +16,7 @@ import { ExpenseListItem } from '../components/ExpenseListItem';
 import { DateRangePicker } from '../components/DateRangePicker';
 import { CategoryFilter } from '../components/CategoryFilter';
 import { AccountPicker } from '../components/AccountPicker';
+import { AddExpenseModal } from '../components/AddExpenseModal';
 import { expenseRepository } from '../database/repositories/expenseRepository';
 import { accountRepository } from '../database/repositories/accountRepository';
 import { Account, ExpenseWithAccount, CategorySummary } from '../types';
@@ -34,6 +36,10 @@ export const ExpensesScreen: React.FC = () => {
     const [categorySummary, setCategorySummary] = useState<CategorySummary[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [total, setTotal] = useState(0);
+
+    // Modal State
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedExpense, setSelectedExpense] = useState<ExpenseWithAccount | null>(null);
 
     const loadData = useCallback(async () => {
         try {
@@ -65,6 +71,51 @@ export const ExpensesScreen: React.FC = () => {
     const onRefresh = () => {
         setRefreshing(true);
         loadData();
+    };
+
+    const handleExpensePress = (expense: ExpenseWithAccount) => {
+        setSelectedExpense(expense);
+        setModalVisible(true);
+    };
+
+    const handleModalClose = () => {
+        setModalVisible(false);
+        setSelectedExpense(null);
+    };
+
+    const handleUpdateExpense = async (data: {
+        amount: number;
+        category: string;
+        account_id: number;
+        date: Date;
+        description: string;
+    }) => {
+        if (!selectedExpense) return;
+        try {
+            await expenseRepository.update(
+                selectedExpense.id,
+                data.account_id,
+                data.amount,
+                data.category,
+                data.date,
+                data.description
+            );
+            loadData();
+        } catch (error) {
+            console.error('Failed to update expense:', error);
+            throw error; // Re-throw to let modal handle error state
+        }
+    };
+
+    const handleDeleteExpense = async () => {
+        if (!selectedExpense) return;
+        try {
+            await expenseRepository.delete(selectedExpense.id);
+            loadData();
+        } catch (error) {
+            console.error('Failed to delete expense:', error);
+            throw error;
+        }
     };
 
     // Filter expenses by category
@@ -163,7 +214,12 @@ export const ExpensesScreen: React.FC = () => {
             <FlatList
                 data={filteredExpenses}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <ExpenseListItem expense={item} />}
+                renderItem={({ item }) => (
+                    <ExpenseListItem
+                        expense={item}
+                        onPress={() => handleExpensePress(item)}
+                    />
+                )}
                 ListHeaderComponent={renderHeader}
                 ListEmptyComponent={renderEmpty}
                 contentContainerStyle={styles.listContent}
@@ -176,6 +232,15 @@ export const ExpensesScreen: React.FC = () => {
                         tintColor={colors.primary}
                     />
                 }
+            />
+
+            <AddExpenseModal
+                visible={modalVisible}
+                onClose={handleModalClose}
+                onSubmit={handleUpdateExpense}
+                onDelete={handleDeleteExpense}
+                accounts={accounts}
+                expense={selectedExpense}
             />
         </View>
     );

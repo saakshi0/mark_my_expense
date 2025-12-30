@@ -40,7 +40,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         }
     };
 
-    const setPreset = (preset: 'week' | 'month' | 'all') => {
+    const setPreset = (preset: 'week' | 'month' | '3months' | 'all') => {
         const today = new Date();
         today.setHours(23, 59, 59, 999);
 
@@ -52,6 +52,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 break;
             case 'month':
                 start = new Date(today.getFullYear(), today.getMonth(), 1);
+                break;
+            case '3months':
+                start = new Date(today.getFullYear(), today.getMonth() - 2, 1); // Current month - 2 gives 3 months span (e.g., Oct, Nov, Dec)
                 break;
             case 'all':
                 start = new Date(2020, 0, 1);
@@ -81,6 +84,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.presetButton, { backgroundColor: colors.surfaceVariant }]}
+                    onPress={() => setPreset('3months')}
+                >
+                    <Text style={[styles.presetText, { color: colors.text }]}>Last 3 Months</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.presetButton, { backgroundColor: colors.surfaceVariant, opacity: 0.7 }]}
                     onPress={() => setPreset('all')}
                 >
                     <Text style={[styles.presetText, { color: colors.text }]}>All Time</Text>

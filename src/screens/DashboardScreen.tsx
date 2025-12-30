@@ -33,6 +33,9 @@ export const DashboardScreen: React.FC = () => {
     const [recentExpenses, setRecentExpenses] = useState<ExpenseWithAccount[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
 
+    // Edit State
+    const [selectedExpense, setSelectedExpense] = useState<ExpenseWithAccount | null>(null);
+
     const loadData = useCallback(async () => {
         try {
             const today = getToday();
@@ -90,6 +93,41 @@ export const DashboardScreen: React.FC = () => {
             data.description
         );
         loadData();
+    };
+
+    const handleUpdateExpense = async (data: {
+        amount: number;
+        category: string;
+        account_id: number;
+        date: Date;
+        description: string;
+    }) => {
+        if (selectedExpense) {
+            await expenseRepository.update(
+                selectedExpense.id,
+                data.account_id,
+                data.amount,
+                data.category,
+                data.date,
+                data.description
+            );
+            loadData();
+        } else {
+            // Fallback for new expense if somehow this is called
+            await handleAddExpense(data);
+        }
+    };
+
+    const handleDeleteExpense = async () => {
+        if (selectedExpense) {
+            await expenseRepository.delete(selectedExpense.id);
+            loadData();
+        }
+    };
+
+    const handleExpensePress = (expense: ExpenseWithAccount) => {
+        setSelectedExpense(expense);
+        setShowAddExpense(true);
     };
 
     const onRefresh = () => {
@@ -175,7 +213,11 @@ export const DashboardScreen: React.FC = () => {
                             Recent Expenses
                         </Text>
                         {recentExpenses.map((expense) => (
-                            <ExpenseListItem key={expense.id} expense={expense} />
+                            <ExpenseListItem
+                                key={expense.id}
+                                expense={expense}
+                                onPress={() => handleExpensePress(expense)}
+                            />
                         ))}
                     </View>
                 )}
@@ -186,7 +228,10 @@ export const DashboardScreen: React.FC = () => {
             {/* Floating Add Button */}
             <TouchableOpacity
                 style={[styles.fab, { backgroundColor: colors.primary }]}
-                onPress={() => setShowAddExpense(true)}
+                onPress={() => {
+                    setSelectedExpense(null);
+                    setShowAddExpense(true);
+                }}
                 activeOpacity={0.8}
             >
                 <Ionicons name="add" size={28} color="#FFFFFF" />
@@ -195,9 +240,14 @@ export const DashboardScreen: React.FC = () => {
             {/* Add Expense Modal */}
             <AddExpenseModal
                 visible={showAddExpense}
-                onClose={() => setShowAddExpense(false)}
-                onSubmit={handleAddExpense}
+                onClose={() => {
+                    setShowAddExpense(false);
+                    setSelectedExpense(null);
+                }}
+                onSubmit={selectedExpense ? handleUpdateExpense : handleAddExpense}
+                onDelete={selectedExpense ? handleDeleteExpense : undefined}
                 accounts={accounts}
+                expense={selectedExpense}
             />
         </View>
     );

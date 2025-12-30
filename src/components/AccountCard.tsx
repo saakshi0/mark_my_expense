@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { AccountSummary } from '../types';
 import { formatCurrency } from '../utils/dateUtils';
+import { getBankIcon } from '../utils/bankIcons';
 
 interface AccountCardProps {
     account: AccountSummary;
@@ -15,14 +15,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({
     onDelete
 }) => {
     const { colors } = useTheme();
+    const bankIcon = getBankIcon(account.account_name);
 
     return (
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
-            <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
-                <Ionicons
-                    name="wallet"
-                    size={24}
-                    color={colors.primary}
+            <View style={[styles.iconContainer, { backgroundColor: 'transparent' }]}>
+                <Image
+                    source={bankIcon}
+                    style={styles.bankLogo}
+                    resizeMode="contain"
                 />
             </View>
 
@@ -73,9 +74,12 @@ const styles = StyleSheet.create({
     iconContainer: {
         width: 48,
         height: 48,
-        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    bankLogo: {
+        width: 40,
+        height: 40,
     },
     details: {
         flex: 1,
