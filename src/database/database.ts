@@ -1,0 +1,50 @@
+import * as SQLite from 'expo-sqlite';
+import { CREATE_ACCOUNTS_TABLE, CREATE_EXPENSES_TABLE, CREATE_INDEXES } from './schema';
+
+let db: SQLite.SQLiteDatabase | null = null;
+
+export const getDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
+    if (db) return db;
+
+    db = await SQLite.openDatabaseAsync('expense_tracker.db');
+    return db;
+};
+
+export const initDatabase = async (): Promise<void> => {
+    const database = await getDatabase();
+
+    // Enable foreign keys
+    await database.execAsync('PRAGMA foreign_keys = ON;');
+
+    // Create tables
+    await database.execAsync(CREATE_ACCOUNTS_TABLE);
+    await database.execAsync(CREATE_EXPENSES_TABLE);
+
+    // Create indexes (split into individual statements)
+    await database.execAsync('CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);');
+    await database.execAsync('CREATE INDEX IF NOT EXISTS idx_expenses_account ON expenses(account_id);');
+    await database.execAsync('CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);');
+
+    console.log('Database initialized successfully');
+};
+
+export const clearAllData = async (): Promise<void> => {
+    const database = await getDatabase();
+
+    // Delete all data from tables (order matters due to foreign keys)
+    await database.execAsync('DELETE FROM expenses;');
+    await database.execAsync('DELETE FROM accounts;');
+
+    // Reset auto-increment counters
+    await database.execAsync("DELETE FROM sqlite_sequence WHERE name='expenses';");
+    await database.execAsync("DELETE FROM sqlite_sequence WHERE name='accounts';");
+
+    console.log('All data cleared successfully');
+};
+
+export const closeDatabase = async (): Promise<void> => {
+    if (db) {
+        await db.closeAsync();
+        db = null;
+    }
+};
