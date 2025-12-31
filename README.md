@@ -5,6 +5,7 @@ A slick, offline-first mobile expense tracking application built with React Nati
 ## 🚀 Features
 
 -   **Dashboard Overview**: Get insights with interactive weekly and monthly expense pie charts.
+-   **Spending Trends**: Visualize your spending habits with a dynamic 6-month trend graph on the Expenses screen.
 -   **Expense Management**: Easily add, view, and delete daily expenses.
 -   **Account Handling**: specific accounts (e.g., Cash, Credit Card, Savings) to categorize spending sources.
 -   **Categories**: Organize expenses with a wide range of predefined categories (Food, Transport, Bills, etc.).

@@ -139,19 +139,43 @@ export const AccountsScreen: React.FC = () => {
 
             const csvContent = exportToCSV(expenses);
             const fileName = `expenses_${formatDate(exportStartDate).replace(/\s/g, '_')}_to_${formatDate(exportEndDate).replace(/\s/g, '_')}.csv`;
-            const filePath = `${FileSystem.cacheDirectory}${fileName}`;
 
-            await FileSystem.writeAsStringAsync(filePath, csvContent, {
-                encoding: FileSystem.EncodingType.UTF8,
-            });
+            if (Platform.OS === 'android') {
+                const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
 
-            if (await Sharing.isAvailableAsync()) {
-                await Sharing.shareAsync(filePath, {
-                    mimeType: 'text/csv',
-                    dialogTitle: 'Export Expenses',
-                });
+                if (permissions.granted) {
+                    try {
+                        const uri = await FileSystem.StorageAccessFramework.createFileAsync(
+                            permissions.directoryUri,
+                            fileName,
+                            'text/csv'
+                        );
+
+                        await FileSystem.writeAsStringAsync(uri, csvContent, {
+                            encoding: FileSystem.EncodingType.UTF8,
+                        });
+
+                        Alert.alert('Success', `Exported ${expenses.length} expenses successfully`);
+                    } catch (e) {
+                        console.error("Export save error", e);
+                        Alert.alert('Error', 'Failed to save export file');
+                    }
+                }
             } else {
-                Alert.alert('Success', `Exported ${expenses.length} expenses to ${fileName}`);
+                const filePath = `${FileSystem.cacheDirectory}${fileName}`;
+                await FileSystem.writeAsStringAsync(filePath, csvContent, {
+                    encoding: FileSystem.EncodingType.UTF8,
+                });
+
+                if (await Sharing.isAvailableAsync()) {
+                    await Sharing.shareAsync(filePath, {
+                        mimeType: 'text/csv',
+                        dialogTitle: 'Export Expenses',
+                        UTI: 'public.comma-separated-values-text'
+                    });
+                } else {
+                    Alert.alert('Success', `Exported ${expenses.length} expenses to ${fileName}`);
+                }
             }
 
             setShowExportModal(false);
@@ -167,7 +191,7 @@ export const AccountsScreen: React.FC = () => {
         setIsImporting(true);
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: 'text/csv',
+                type: ['text/csv', 'text/comma-separated-values', 'application/csv', '*/*'],
                 copyToCacheDirectory: true,
             });
 
@@ -177,6 +201,14 @@ export const AccountsScreen: React.FC = () => {
             }
 
             const file = result.assets[0];
+
+            // Validate file extension
+            if (!file.name?.toLowerCase().endsWith('.csv')) {
+                Alert.alert('Invalid File', 'Please select a CSV file (.csv extension)');
+                setIsImporting(false);
+                return;
+            }
+
             const content = await FileSystem.readAsStringAsync(file.uri);
 
             const parsedRows = parseCSV(content);
@@ -238,6 +270,60 @@ export const AccountsScreen: React.FC = () => {
             Alert.alert('Import Failed', errorMessage);
         } finally {
             setIsImporting(false);
+        }
+    };
+
+    const handleDownloadSampleCSV = async () => {
+        try {
+            const sampleCSV = `Account,Category,Amount,Date,Description
+"HDFC Savings","Food & Dining",250.00,2024-01-15,"Lunch at restaurant"
+"ICICI Credit Card","Shopping",1500.00,2024-01-16,"Online shopping"
+"SBI Account","Transportation",100.00,2024-01-17,"Cab fare"
+"HDFC Savings","Groceries",800.00,2024-01-18,"Weekly groceries"
+"ICICI Credit Card","Entertainment",350.00,2024-01-19,"Movie tickets"`;
+
+            const fileName = 'sample_expenses_template.csv';
+
+            if (Platform.OS === 'android') {
+                const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+                if (permissions.granted) {
+                    try {
+                        const uri = await FileSystem.StorageAccessFramework.createFileAsync(
+                            permissions.directoryUri,
+                            fileName,
+                            'text/csv'
+                        );
+
+                        await FileSystem.writeAsStringAsync(uri, sampleCSV, {
+                            encoding: FileSystem.EncodingType.UTF8,
+                        });
+
+                        Alert.alert('Success', 'Sample CSV saved successfully');
+                    } catch (e) {
+                        console.error("Save error", e);
+                        Alert.alert('Error', 'Failed to save file');
+                    }
+                }
+            } else {
+                const filePath = `${FileSystem.cacheDirectory}${fileName}`;
+                await FileSystem.writeAsStringAsync(filePath, sampleCSV, {
+                    encoding: FileSystem.EncodingType.UTF8,
+                });
+
+                if (await Sharing.isAvailableAsync()) {
+                    await Sharing.shareAsync(filePath, {
+                        mimeType: 'text/csv',
+                        dialogTitle: 'Download Sample CSV Template',
+                        UTI: 'public.comma-separated-values-text' // iOS helps to open in Numbers/Excel
+                    });
+                } else {
+                    Alert.alert('Error', 'Sharing is not available on this device');
+                }
+            }
+        } catch (error) {
+            console.error('Sample CSV error:', error);
+            Alert.alert('Error', 'Failed to create sample CSV');
         }
     };
 
@@ -305,10 +391,18 @@ export const AccountsScreen: React.FC = () => {
                         <ActivityIndicator size="small" color={colors.primary} />
                     ) : (
                         <>
-                            <Ionicons name="cloud-upload-outline" size={20} color={colors.primary} />
+                            <Ionicons name="folder-open-outline" size={20} color={colors.primary} />
                             <Text style={[styles.actionButtonText, { color: colors.primary }]}>Import from CSV</Text>
                         </>
                     )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.actionButton, { backgroundColor: colors.textMuted + '15', borderColor: colors.textMuted }]}
+                    onPress={handleDownloadSampleCSV}
+                >
+                    <Ionicons name="document-text-outline" size={20} color={colors.textSecondary} />
+                    <Text style={[styles.actionButtonText, { color: colors.textSecondary }]}>Download Sample CSV Format</Text>
                 </TouchableOpacity>
             </View>
 

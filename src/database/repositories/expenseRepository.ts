@@ -154,6 +154,39 @@ export const expenseRepository = {
         return result?.total || 0;
     },
 
+    // Get monthly trend for date range
+    async getMonthlyTrend(
+        startDate: Date,
+        endDate: Date,
+        accountId?: number
+    ): Promise<{ month: string; total: number }[]> {
+        const db = await getDatabase();
+        const start = toSQLDate(startDate);
+        const end = toSQLDate(endDate);
+
+        let query = `
+      SELECT 
+        strftime('%Y-%m', date) as month,
+        SUM(amount) as total
+      FROM expenses
+      WHERE date >= ? AND date <= ?
+    `;
+        const params: (string | number)[] = [start, end];
+
+        if (accountId) {
+            query += ' AND account_id = ?';
+            params.push(accountId);
+        }
+
+        query += " GROUP BY strftime('%Y-%m', date) ORDER BY month ASC";
+
+        const result = await db.getAllAsync<{ month: string; total: number }>(
+            query,
+            params
+        );
+        return result;
+    },
+
     // Get recent expenses (last n)
     async getRecent(limit: number = 10): Promise<ExpenseWithAccount[]> {
         const db = await getDatabase();

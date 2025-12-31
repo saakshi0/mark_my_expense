@@ -11,6 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { ExpensePieChart } from '../components/ExpensePieChart';
+import { SpendingGraph } from '../components/SpendingGraph';
 import { ExpenseListItem } from '../components/ExpenseListItem';
 import { DateRangePicker } from '../components/DateRangePicker';
 import { CategoryFilter } from '../components/CategoryFilter';
@@ -19,7 +20,7 @@ import { AddExpenseModal } from '../components/AddExpenseModal';
 import { expenseRepository } from '../database/repositories/expenseRepository';
 import { accountRepository } from '../database/repositories/accountRepository';
 import { Account, ExpenseWithAccount, CategorySummary } from '../types';
-import { getLast7Days, getToday, formatCurrency } from '../utils/dateUtils';
+import { getLast7Days, getToday, formatCurrency, subMonths } from '../utils/dateUtils';
 
 export const ExpensesScreen: React.FC = () => {
     const { colors } = useTheme();
@@ -32,6 +33,7 @@ export const ExpensesScreen: React.FC = () => {
 
     const [expenses, setExpenses] = useState<ExpenseWithAccount[]>([]);
     const [categorySummary, setCategorySummary] = useState<CategorySummary[]>([]);
+    const [trendData, setTrendData] = useState<{ month: string; total: number }[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [total, setTotal] = useState(0);
 
@@ -41,17 +43,24 @@ export const ExpensesScreen: React.FC = () => {
 
     const loadData = useCallback(async () => {
         try {
-            const [expensesList, summary, totalSpend, accts] = await Promise.all([
+            // Determine trend start date
+            const durationMs = endDate.getTime() - startDate.getTime();
+            const daysDiff = durationMs / (1000 * 3600 * 24);
+            const trendStart = daysDiff > 88 ? startDate : subMonths(endDate, 6);
+
+            const [expensesList, summary, totalSpend, accts, trend] = await Promise.all([
                 expenseRepository.getByDateRange(startDate, endDate, selectedAccountId || undefined),
                 expenseRepository.getCategorySummary(startDate, endDate, selectedAccountId || undefined),
                 expenseRepository.getTotalSpend(startDate, endDate, selectedAccountId || undefined),
                 accountRepository.getAll(),
+                expenseRepository.getMonthlyTrend(trendStart, endDate, selectedAccountId || undefined)
             ]);
 
             setExpenses(expensesList);
             setCategorySummary(summary);
             setTotal(totalSpend);
             setAccounts(accts);
+            setTrendData(trend);
         } catch (error) {
             console.error('Failed to load expenses:', error);
         } finally {
@@ -152,6 +161,14 @@ export const ExpensesScreen: React.FC = () => {
                 <Text style={[styles.summaryText, { color: colors.primary }]}>
                     Total: {formatCurrency(total)} ({expenses.length} expenses)
                 </Text>
+            </View>
+
+            {/* Spending Graph */}
+            <View style={styles.chartContainer}>
+                <SpendingGraph
+                    data={trendData}
+                    title="Spending Trend"
+                />
             </View>
 
             {/* Pie Chart */}

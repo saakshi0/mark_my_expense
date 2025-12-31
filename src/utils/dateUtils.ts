@@ -60,6 +60,12 @@ export const getLast7Days = (): Date => {
     return now;
 };
 
+export const subMonths = (date: Date, months: number): Date => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() - months);
+    return d;
+};
+
 export const getToday = (): Date => {
     const now = new Date();
     now.setHours(23, 59, 59, 999);
