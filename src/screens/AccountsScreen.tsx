@@ -25,7 +25,7 @@ import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { accountRepository } from '../database/repositories/accountRepository';
 import { expenseRepository } from '../database/repositories/expenseRepository';
-import { clearAllData } from '../database/database';
+
 import { Account } from '../types';
 import { exportToCSV, parseCSV, mapCategoryNameToId } from '../utils/csvUtils';
 import { formatDate } from '../utils/dateUtils';
@@ -36,7 +36,6 @@ export const AccountsScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showEraseModal, setShowEraseModal] = useState(false);
     const [showExportModal, setShowExportModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -46,8 +45,6 @@ export const AccountsScreen: React.FC = () => {
     const [newAccountName, setNewAccountName] = useState('');
     const [accountType, setAccountType] = useState<'bank' | 'card'>('bank');
     const [accountIcon, setAccountIcon] = useState<string | null>(null);
-    const [deleteConfirmText, setDeleteConfirmText] = useState('');
-    const [isErasing, setIsErasing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
 
@@ -139,25 +136,7 @@ export const AccountsScreen: React.FC = () => {
         }
     };
 
-    const handleEraseAllData = async () => {
-        if (deleteConfirmText !== 'DELETE') {
-            Alert.alert('Error', 'Please type DELETE to confirm');
-            return;
-        }
 
-        setIsErasing(true);
-        try {
-            await clearAllData();
-            setDeleteConfirmText('');
-            setShowEraseModal(false);
-            loadData();
-            Alert.alert('Success', 'All data has been erased successfully');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to erase data');
-        } finally {
-            setIsErasing(false);
-        }
-    };
 
     const handleExport = async () => {
         setIsExporting(true);
@@ -467,21 +446,6 @@ export const AccountsScreen: React.FC = () => {
                 >
                     <Ionicons name="document-text-outline" size={20} color={colors.textSecondary} />
                     <Text style={[styles.actionButtonText, { color: colors.textSecondary }]}>Download Sample CSV Format</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Danger Zone */}
-            <View style={[styles.dangerZone, { backgroundColor: colors.surface, borderColor: colors.error + '30' }]}>
-                <Text style={[styles.dangerTitle, { color: colors.error }]}>Danger Zone</Text>
-                <Text style={[styles.dangerDescription, { color: colors.textMuted }]}>
-                    Permanently delete all your data including accounts and expenses.
-                </Text>
-                <TouchableOpacity
-                    style={[styles.eraseButton, { backgroundColor: colors.error + '15', borderColor: colors.error }]}
-                    onPress={() => setShowEraseModal(true)}
-                >
-                    <Ionicons name="trash" size={18} color={colors.error} />
-                    <Text style={[styles.eraseButtonText, { color: colors.error }]}>Erase All Data</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -896,106 +860,6 @@ export const AccountsScreen: React.FC = () => {
                                     <>
                                         <Ionicons name="download" size={20} color="#FFFFFF" />
                                         <Text style={styles.submitButtonText}>Export CSV</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </SafeAreaView>
-                </View>
-            </Modal>
-
-            {/* Erase Data Modal */}
-            <Modal
-                visible={showEraseModal}
-                transparent
-                animationType="slide"
-                onRequestClose={() => {
-                    setShowEraseModal(false);
-                    setDeleteConfirmText('');
-                }}
-            >
-                <View style={styles.modalOverlay}>
-                    <SafeAreaView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.error }]}>
-                                ⚠️ Erase All Data
-                            </Text>
-                            <TouchableOpacity onPress={() => {
-                                setShowEraseModal(false);
-                                setDeleteConfirmText('');
-                            }}>
-                                <Ionicons name="close" size={24} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <ScrollView style={styles.modalBody}>
-                            <View style={[styles.warningBox, { backgroundColor: colors.error + '10' }]}>
-                                <Ionicons name="warning" size={32} color={colors.error} />
-                                <Text style={[styles.warningText, { color: colors.error }]}>
-                                    This action cannot be undone!
-                                </Text>
-                            </View>
-
-                            <Text style={[styles.eraseDescription, { color: colors.text }]}>
-                                This will permanently delete:
-                            </Text>
-                            <View style={styles.deleteList}>
-                                <Text style={[styles.deleteItem, { color: colors.textSecondary }]}>
-                                    • All your accounts
-                                </Text>
-                                <Text style={[styles.deleteItem, { color: colors.textSecondary }]}>
-                                    • All your expense records
-                                </Text>
-                            </View>
-
-                            <View style={styles.inputSection}>
-                                <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-                                    Type DELETE to confirm
-                                </Text>
-                                <TextInput
-                                    style={[styles.textInput, {
-                                        backgroundColor: colors.surfaceVariant,
-                                        borderColor: deleteConfirmText === 'DELETE' ? colors.error : colors.border,
-                                        color: colors.text,
-                                        textAlign: 'center',
-                                        fontSize: 18,
-                                        fontWeight: '600',
-                                        letterSpacing: 2,
-                                    }]}
-                                    value={deleteConfirmText}
-                                    onChangeText={setDeleteConfirmText}
-                                    placeholder="DELETE"
-                                    placeholderTextColor={colors.textMuted}
-                                    autoCapitalize="characters"
-                                    autoCorrect={false}
-                                />
-                            </View>
-                        </ScrollView>
-
-                        <View style={styles.modalFooter}>
-                            <TouchableOpacity
-                                style={[styles.cancelButton, { borderColor: colors.border }]}
-                                onPress={() => {
-                                    setShowEraseModal(false);
-                                    setDeleteConfirmText('');
-                                }}
-                            >
-                                <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.eraseConfirmButton,
-                                    { backgroundColor: deleteConfirmText === 'DELETE' ? colors.error : colors.textMuted }
-                                ]}
-                                onPress={handleEraseAllData}
-                                disabled={deleteConfirmText !== 'DELETE' || isErasing}
-                            >
-                                {isErasing ? (
-                                    <ActivityIndicator size="small" color="#FFFFFF" />
-                                ) : (
-                                    <>
-                                        <Ionicons name="trash" size={18} color="#FFFFFF" />
-                                        <Text style={styles.eraseConfirmButtonText}>Erase All</Text>
                                     </>
                                 )}
                             </TouchableOpacity>

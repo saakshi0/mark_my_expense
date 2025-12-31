@@ -5,22 +5,27 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
+import { notificationService } from './src/services/notificationService';
 
 const AppContent: React.FC = () => {
   const { colors, isDark } = useTheme();
   const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    const setupDatabase = async () => {
+    const setupApp = async () => {
       try {
+        // Initialize database
         await initDatabase();
         setDbReady(true);
+
+        // Schedule notifications after DB is ready
+        await notificationService.scheduleAllNotifications();
       } catch (error) {
-        console.error('Database initialization failed:', error);
+        console.error('App initialization failed:', error);
       }
     };
 
-    setupDatabase();
+    setupApp();
   }, []);
 
   if (!dbReady) {

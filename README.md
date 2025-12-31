@@ -4,84 +4,161 @@ A slick, offline-first mobile expense tracking application built with React Nati
 
 ## 🚀 Features
 
--   **Dashboard Overview**: Get insights with interactive weekly and monthly expense pie charts.
--   **Spending Trends**: Visualize your spending habits with a dynamic 6-month trend graph on the Expenses screen.
--   **Expense Management**: Easily add, view, and delete daily expenses.
--   **Account Handling**: specific accounts (e.g., Cash, Credit Card, Savings) to categorize spending sources.
--   **Categories**: Organize expenses with a wide range of predefined categories (Food, Transport, Bills, etc.).
--   **Offline Functionality**: Data is stored securely on your device using SQLite, ensuring privacy and instant access without internet.
--   **Dark/Light Mode**: Fully supported theming based on system preferences or user choice.
+### Core Features
+- **Dashboard Overview**: Get insights with interactive weekly and monthly expense charts
+- **Spending Trends**: Visualize your spending habits with a dynamic 6-month trend line graph
+- **Expense Management**: Easily add, view, edit, and delete daily expenses
+- **Account Handling**: Manage bank accounts and cards with custom icons
+- **Categories**: 20 predefined categories with customizable icons and colors
+- **Offline Functionality**: Data stored securely on-device using SQLite
+
+### Recent Updates
+- **📊 Horizontal Bar Charts**: Replaced pie charts with dynamic horizontal bar charts for better category visualization
+- **🔔 Push Notifications**: Daily reminders (9 PM) and weekly summaries (Sundays 9 PM)
+- **⚙️ Settings Screen**: New settings tab with notification controls and data management
+- **🎯 Category Filter Dropdown**: Replaced horizontal chip filters with a sleek dropdown picker
+- **🗑️ Data Deletion**: Moved to Settings screen for better organization
+
+### UI/UX
+- **Dark/Light Mode**: Full theming support based on system preferences or user choice
+- **Modern Design**: Premium UI with smooth animations and gradients
+- **Inter Font**: Beautiful typography with the Inter font family
 
 ## 🛠️ Technology Stack
 
--   **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
--   **Language**: [TypeScript](https://www.typescriptlang.org/)
--   **Database**: [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/)
--   **Navigation**: [React Navigation 7](https://reactnavigation.org/)
--   **Icons**: [Expo Vector Icons](https://icons.expo.fyi/) (Ionicons)
--   **Fonts**: [Inter](https://fonts.google.com/specimen/Inter) via `@expo-google-fonts`
+| Technology | Purpose |
+|------------|---------|
+| [React Native](https://reactnative.dev/) | Cross-platform mobile framework |
+| [Expo](https://expo.dev/) (SDK 54) | Development platform & build tools |
+| [TypeScript](https://www.typescriptlang.org/) | Type-safe JavaScript |
+| [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) | Local database storage |
+| [React Navigation 7](https://reactnavigation.org/) | Screen navigation |
+| [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) | Push notifications |
+| [Ionicons](https://icons.expo.fyi/) | Icon library |
+| [Inter Font](https://fonts.google.com/specimen/Inter) | Typography |
 
 ## 📂 Project Structure
 
 ```
 expense_tracker_mobile/
 ├── src/
-│   ├── components/    # Reusable UI components (CategoryPicker, Cards, etc.)
-│   ├── constants/     # App constants and theme configurations
-│   ├── context/       # React Context providers (ThemeContext)
-│   ├── database/      # SQLite database setup, repositories, and schema
-│   ├── navigation/    # Navigation setup (AppNavigator)
-│   ├── screens/       # Main application screens (Dashboard, Expenses, Accounts)
-│   ├── types/         # TypeScript type definitions
-│   └── utils/         # Helper functions (date formatting, currency, etc.)
-├── assets/            # Static assets (images, fonts)
-├── App.tsx            # Application entry point
-├── app.json           # Expo configuration
-└── package.json       # Dependencies and scripts
+│   ├── components/        # Reusable UI components
+│   │   ├── AccountCard.tsx
+│   │   ├── AccountPicker.tsx
+│   │   ├── AddExpenseModal.tsx
+│   │   ├── CategoryFilter.tsx      # Dropdown category filter
+│   │   ├── CategoryPicker.tsx
+│   │   ├── DateRangePicker.tsx
+│   │   ├── ExpenseListItem.tsx
+│   │   ├── ExpensePieChart.tsx     # Horizontal bar chart (renamed)
+│   │   ├── SpendingGraph.tsx       # Line chart for trends
+│   │   └── ThemeToggle.tsx
+│   ├── constants/
+│   │   ├── categories.ts           # 20 expense categories
+│   │   └── theme.ts                # Color palette
+│   ├── context/
+│   │   └── ThemeContext.tsx        # Dark/Light mode provider
+│   ├── database/
+│   │   ├── database.ts             # SQLite connection & utils
+│   │   ├── schema.ts               # Table definitions
+│   │   └── repositories/
+│   │       ├── accountRepository.ts
+│   │       └── expenseRepository.ts
+│   ├── navigation/
+│   │   └── AppNavigator.tsx        # Bottom tab navigation
+│   ├── screens/
+│   │   ├── DashboardScreen.tsx     # Home with charts
+│   │   ├── ExpensesScreen.tsx      # Expense list & filters
+│   │   ├── AccountsScreen.tsx      # Account management
+│   │   └── SettingsScreen.tsx      # Settings & notifications
+│   ├── services/
+│   │   └── notificationService.ts  # Push notification logic
+│   ├── types/
+│   │   └── index.ts                # TypeScript interfaces
+│   └── utils/
+│       ├── bankIcons.ts            # Bank logo mappings
+│       ├── csvUtils.ts             # Import/Export utilities
+│       └── dateUtils.ts            # Date formatting helpers
+├── assets/                          # Static assets & bank logos
+├── App.tsx                          # Application entry point
+├── app.json                         # Expo configuration
+└── package.json                     # Dependencies
 ```
 
 ## ⚙️ Setup & Installation
 
 ### Prerequisites
-1.  **Node.js**: Install the latest LTS version from [nodejs.org](https://nodejs.org/).
-2.  **Expo Go / Simulators**:
-    -   **Physical Device**: Install "Expo Go" from the App Store or Google Play.
-    -   **Simulator**: Install Android Studio (for Android) or Xcode (for iOS/macOS).
+1. **Node.js** v18+ - [Download](https://nodejs.org/)
+2. **Expo Go App** on your mobile device:
+   - Android: [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
+   - iOS: [App Store](https://apps.apple.com/app/expo-go/id982107779)
 
-### Installation Steps
+### Quick Start
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository_url>
-    cd expense_tracker_mobile
-    ```
+```bash
+# Clone and install
+git clone <repository_url>
+cd expense_tracker_mobile
+npm install
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
-    *Note: If you encounter peer dependency issues, try `npm install --legacy-peer-deps`.*
+# Start development server
+npx expo start
 
-3.  **Start the development server**:
-    ```bash
-    npm start
-    # or
-    npx expo start
-    ```
+# Or use tunnel mode for easier device connection
+npx expo start --tunnel
+```
 
-4.  **Run on a device**:
-    -   **QR Code**: Scan the QR code displayed in the terminal using the Expo Go app (Android) or Camera app (iOS).
-    -   **Emulators**: Press `a` to open in Android Emulator or `i` to open in iOS Simulator (macOS only).
+### Running on Device
+- **Android**: Open Expo Go → Scan QR code
+- **iOS**: Open Camera → Scan QR code → Open in Expo Go
 
-## 🧑‍💻 Development Flow
+## 📲 Building for Production
 
--   **Database Initialization**: The app checks for `expense_tracker.db` on launch. If missing, it initializes the schema defined in `src/database/schema.ts` via `initDatabase()` in `App.tsx`.
--   **Modifying Database**: If you modify the schema, you may need to clear the app data or uninstall/reinstall the app on your simulator/device to re-trigger initialization.
--   **Styling**: Use the `useTheme` hook from `src/context/ThemeContext.tsx` to access theme colors. Avoid hardcoding hex values; use the provided `colors` object for dark mode compatibility.
+```bash
+# Install EAS CLI
+npm install -g eas-cli
+
+# Login to Expo
+eas login
+
+# Build Android APK
+eas build -p android --profile preview
+
+# Build iOS (requires macOS)
+eas build -p ios --profile preview
+```
 
 ## 📝 Scripts
 
--   `npm start`: Start the Expo development server.
--   `npm run android`: specific command to start on Android.
--   `npm run ios`: specific command to start on iOS.
--   `npm run web`: Start the app in a web browser.
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start Expo development server |
+| `npm run android` | Start on Android emulator |
+| `npm run ios` | Start on iOS simulator |
+| `npm run web` | Start in web browser |
+
+## 📖 Documentation
+
+For detailed documentation, see:
+- **[Architecture Guide](./docs/ARCHITECTURE.md)** - Database schema, component diagrams, data flow
+- **[Installation Guide](./INSTALL.md)** - Step-by-step setup instructions
+
+## 🔔 Notifications
+
+The app includes scheduled push notifications:
+- **Daily Reminder** (9 PM): Reminder to log expenses
+- **Weekly Summary** (Sunday 9 PM): Weekly spending summary
+
+Manage notifications in Settings → Notifications.
+
+## 📊 Data Management
+
+- **Export**: Export expenses to CSV (filtered by date range)
+- **Import**: Import expenses from CSV (auto-creates accounts)
+- **Erase**: Delete all data (Settings → Danger Zone)
+
+All data is stored locally on your device using SQLite.
+
+## 📄 License
+
+MIT License - See LICENSE file for details.

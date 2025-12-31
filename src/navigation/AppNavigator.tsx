@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { ExpensesScreen } from '../screens/ExpensesScreen';
 import { AccountsScreen } from '../screens/AccountsScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,6 +40,9 @@ export const AppNavigator: React.FC = () => {
                         case 'Accounts':
                             iconName = focused ? 'wallet' : 'wallet-outline';
                             break;
+                        case 'Settings':
+                            iconName = focused ? 'settings' : 'settings-outline';
+                            break;
                         default:
                             iconName = 'home-outline';
                     }
@@ -50,6 +54,8 @@ export const AppNavigator: React.FC = () => {
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
             <Tab.Screen name="Expenses" component={ExpensesScreen} />
             <Tab.Screen name="Accounts" component={AccountsScreen} />
+            <Tab.Screen name="Settings" component={SettingsScreen} />
         </Tab.Navigator>
     );
 };
+
