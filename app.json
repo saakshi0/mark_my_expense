@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "expense_tracker_mobile",
+    "name": "Mark My Expense",
     "slug": "expense_tracker_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,13 +21,19 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.zenitsu29.expense_tracker_mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4d121aa6-8310-4941-9589-3200f00aa66d"
+      }
+    }
   }
 }

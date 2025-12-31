@@ -1,5 +1,5 @@
 {
-  "name": "expense_tracker_mobile",
+  "name": "mark-my-expense",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
