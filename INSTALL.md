@@ -1,6 +1,6 @@
-# Expense Tracker App - Installation Guide
+# Mark My Expense - Installation Guide
 
-## How to Install and Run on Mobile
+## Quick Start
 
 ### Prerequisites
 
@@ -11,26 +11,34 @@
 
 ---
 
-## Quick Start
+## Installation Steps
 
-### Step 1: Install Dependencies
-
-Open a terminal in the project folder and run:
+### Step 1: Clone & Install
 
 ```bash
-cd d:\Learning\expense_tracker_mobile
+# Clone the repository
+git clone <repository_url>
+cd expense_tracker_mobile
+
+# Install dependencies
 npm install
 ```
 
-### Step 2: Start the Development Server
+> **Note**: If you encounter peer dependency issues, try `npm install --legacy-peer-deps`
+
+### Step 2: Start Development Server
 
 ```bash
+# Standard mode (requires same WiFi network)
 npx expo start
+
+# Tunnel mode (works across networks)
+npx expo start --tunnel
 ```
 
 This will display a QR code in your terminal.
 
-### Step 3: Open on Mobile
+### Step 3: Run on Mobile
 
 #### Android
 1. Open the **Expo Go** app
@@ -44,36 +52,30 @@ This will display a QR code in your terminal.
 
 ---
 
-## Local Network Connection
-
-Make sure your computer and phone are on the **same WiFi network**.
-
-If you have connection issues:
-1. Press `s` in the terminal to switch to **Tunnel** mode
-2. Or use `npx expo start --tunnel` (requires `@expo/ngrok`)
-
----
-
 ## Building for Production
 
 ### Android APK
 
 ```bash
-# Install EAS CLI
+# Install EAS CLI (one-time)
 npm install -g eas-cli
 
-# Login to Expo
+# Login to Expo account
 eas login
 
-# Build APK
+# Build preview APK
 eas build -p android --profile preview
+
+# Build production AAB (for Play Store)
+eas build -p android --profile production
 ```
 
-### iOS
+### iOS Build
 
 Requires macOS with Xcode:
 
 ```bash
+# Build for TestFlight/App Store
 eas build -p ios --profile preview
 ```
 
@@ -84,18 +86,115 @@ eas build -p ios --profile preview
 | Issue | Solution |
 |-------|----------|
 | QR code not scanning | Use tunnel mode: `npx expo start --tunnel` |
+| "Network request failed" | Ensure phone and computer on same WiFi |
 | App stuck on splash | Shake device → Reload |
 | Metro bundler error | Delete `node_modules` and reinstall |
 | SQLite error on web | Use mobile device - SQLite works best on iOS/Android |
+| Notifications not working | Check app permissions in device settings |
+
+### Clear Cache
+
+```bash
+# Clear Expo cache
+npx expo start --clear
+
+# Clear Metro bundler cache
+rm -rf node_modules/.cache
+
+# Full reset
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
 
 ---
 
-## App Features
+## App Features Overview
 
-- **Dashboard**: View weekly/monthly expense charts
-- **Expenses**: Filter by date, account, category
-- **Accounts**: Add/delete bank accounts & cards
-- **Dark/Light Mode**: Toggle in header
-- **Erase Data**: Reset all data in Accounts screen
+### Dashboard
+- Weekly and monthly expense bar charts
+- Quick add expense button (FAB)
+- Recent expenses list
+- Dark/Light mode toggle
 
-All data is stored locally on your device using SQLite.
+### Expenses
+- Date range picker with presets
+- Account filter dropdown
+- Category filter dropdown
+- 6-month spending trend graph
+- Category breakdown chart
+- Full expense list with edit/delete
+
+### Accounts
+- Add bank accounts and cards
+- Custom bank icons
+- Export expenses to CSV
+- Import expenses from CSV
+- Download sample CSV format
+
+### Settings (NEW)
+- **Daily Reminder**: Toggle 9 PM expense logging reminder
+- **Weekly Summary**: Toggle Sunday 9 PM spending summary
+- **Test Notifications**: Verify notifications work
+- **Erase All Data**: Delete all accounts and expenses
+
+---
+
+## Data Storage
+
+All data is stored **locally on your device** using SQLite:
+- Location: `expense_tracker.db` in app's private directory
+- No cloud sync (fully offline)
+- Data persists across app updates
+
+### Database Tables
+
+1. **accounts**: Bank accounts and cards
+2. **expenses**: All expense records
+
+See [Architecture Guide](./docs/ARCHITECTURE.md) for detailed schema.
+
+---
+
+## Notification Permissions
+
+The app requests notification permissions on first launch:
+
+- **Android**: Automatically requested
+- **iOS**: Permission popup will appear
+
+To manage permissions later:
+- **Android**: Settings → Apps → Mark My Expense → Notifications
+- **iOS**: Settings → Mark My Expense → Notifications
+
+---
+
+## Development
+
+### Recommended VSCode Extensions
+
+- ESLint
+- Prettier
+- React Native Tools
+- TypeScript Hero
+
+### Hot Reload
+
+Changes to React components will hot reload automatically. For database schema changes, you may need to:
+1. Clear app data, or
+2. Uninstall and reinstall the app
+
+### Debugging
+
+- Shake device to open React Native dev menu
+- Use "Debug Remote JS" for Chrome DevTools
+- Console logs appear in Metro bundler terminal
+
+---
+
+## Support
+
+For issues or questions:
+1. Check [Troubleshooting](#troubleshooting) above
+2. Review [Architecture Guide](./docs/ARCHITECTURE.md)
+3. File an issue on GitHub
