@@ -267,6 +267,61 @@ export const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
 
+                {/* Privacy & Data Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                        Privacy & Data
+                    </Text>
+
+                    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                        <View style={styles.privacyRow}>
+                            <View style={[styles.iconBox, { backgroundColor: colors.success + '20' }]}>
+                                <Ionicons name="shield-checkmark" size={20} color={colors.success} />
+                            </View>
+                            <View style={styles.settingText}>
+                                <Text style={[styles.settingLabel, { color: colors.text }]}>
+                                    Your Data Stays Private
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                                    All your data is stored locally on your device only. No data is sent to any server.
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+                        <View style={styles.privacyRow}>
+                            <View style={[styles.iconBox, { backgroundColor: colors.warning + '20' }]}>
+                                <Ionicons name="phone-portrait-outline" size={20} color={colors.warning} />
+                            </View>
+                            <View style={styles.settingText}>
+                                <Text style={[styles.settingLabel, { color: colors.text }]}>
+                                    Device-Only Storage
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                                    If you uninstall this app, all your data will be permanently deleted from your device.
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+                        <View style={styles.privacyRow}>
+                            <View style={[styles.iconBox, { backgroundColor: colors.primary + '20' }]}>
+                                <Ionicons name="download-outline" size={20} color={colors.primary} />
+                            </View>
+                            <View style={styles.settingText}>
+                                <Text style={[styles.settingLabel, { color: colors.text }]}>
+                                    Export Your Data
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                                    Use the CSV export feature in the Accounts screen to backup your data regularly.
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
                 {/* App Info */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -330,6 +385,13 @@ export const SettingsScreen: React.FC = () => {
                                 </Text>
                                 <Text style={[styles.deleteItem, { color: colors.textSecondary }]}>
                                     • All your expense records
+                                </Text>
+                            </View>
+
+                            <View style={[styles.backupWarningBox, { backgroundColor: colors.warning + '15', borderColor: colors.warning + '40' }]}>
+                                <Ionicons name="cloud-offline-outline" size={20} color={colors.warning} />
+                                <Text style={[styles.backupWarningText, { color: colors.warning }]}>
+                                    Data cannot be restored if you haven't taken a backup using CSV export.
                                 </Text>
                             </View>
 
@@ -524,6 +586,25 @@ const styles = StyleSheet.create({
     },
     bottomPadding: {
         height: 120,
+    },
+    privacyRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        padding: 16,
+    },
+    backupWarningBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        marginTop: 8,
+        gap: 10,
+    },
+    backupWarningText: {
+        fontSize: 13,
+        fontWeight: '500',
+        flex: 1,
     },
     // Modal styles
     modalOverlay: {

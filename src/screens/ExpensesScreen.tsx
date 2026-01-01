@@ -301,6 +301,7 @@ const styles = StyleSheet.create({
         padding: 12,
         borderRadius: 10,
         alignItems: 'center',
+        marginBottom: 6,
     },
     summaryText: {
         fontSize: 14,

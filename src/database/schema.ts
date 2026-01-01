@@ -31,4 +31,6 @@ export const CREATE_INDEXES = `
   CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
   CREATE INDEX IF NOT EXISTS idx_expenses_account ON expenses(account_id);
   CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
+  CREATE INDEX IF NOT EXISTS id_expense_date_account ON expenses(date, account_id);
+  CREATE INDEX IF NOT EXISTS id_expense_date_account_category ON expenses(date, category); 
 `;

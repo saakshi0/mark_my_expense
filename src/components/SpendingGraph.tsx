@@ -90,11 +90,20 @@ export const SpendingGraph: React.FC<SpendingGraphProps> = ({ data, title }) => 
                         marginVertical: 8,
                         borderRadius: 16,
                     }}
+                    segments={4}
                     formatYLabel={(yValue: string) => {
-                        // Simple currency formatting for Y-axis (e.g. 1k, 2k)
+                        // Clean, rounded currency formatting for Y-axis
                         const num = parseInt(yValue);
-                        if (num >= 1000) {
-                            return (num / 1000).toFixed(1) + 'k';
+                        if (num >= 100000) {
+                            // 100K+: show as whole K (e.g., 150K)
+                            return Math.round(num / 1000) + 'K';
+                        } else if (num >= 10000) {
+                            // 10K-99K: show as whole K (e.g., 67K)
+                            return Math.round(num / 1000) + 'K';
+                        } else if (num >= 1000) {
+                            // 1K-9.9K: show with one decimal if needed (e.g., 5.5K or 5K)
+                            const k = num / 1000;
+                            return k % 1 === 0 ? k + 'K' : k.toFixed(1) + 'K';
                         }
                         return num.toString();
                     }}

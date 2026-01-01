@@ -27,7 +27,11 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const toSQLDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    // Use local date parts instead of UTC to avoid timezone discrepancies
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 export const fromSQLDate = (dateStr: string): Date => {

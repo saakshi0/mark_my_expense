@@ -53,6 +53,48 @@ export const AccountsScreen: React.FC = () => {
     const [exportEndDate, setExportEndDate] = useState(new Date());
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
+    const [selectedPreset, setSelectedPreset] = useState<string>('thisMonth');
+
+    // Date range presets
+    const datePresets = [
+        { key: 'thisMonth', label: 'This Month' },
+        { key: 'last3Months', label: 'Last 3 Months' },
+        { key: 'thisYear', label: 'This Year' },
+        { key: 'lastYear', label: 'Last Year' },
+        { key: 'allTime', label: 'All Time' },
+        { key: 'custom', label: 'Custom Range' },
+    ];
+
+    const applyPreset = (preset: string) => {
+        const now = new Date();
+        let start: Date;
+        let end: Date = new Date();
+
+        switch (preset) {
+            case 'thisMonth':
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            case 'last3Months':
+                start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+                break;
+            case 'thisYear':
+                start = new Date(now.getFullYear(), 0, 1);
+                break;
+            case 'lastYear':
+                start = new Date(now.getFullYear() - 1, 0, 1);
+                end = new Date(now.getFullYear() - 1, 11, 31);
+                break;
+            case 'allTime':
+                start = new Date(2000, 0, 1); // Far past date to get all records
+                break;
+            default:
+                return; // Custom - don't change dates
+        }
+
+        setExportStartDate(start);
+        setExportEndDate(end);
+        setSelectedPreset(preset);
+    };
 
     const loadData = useCallback(async () => {
         try {
@@ -795,56 +837,99 @@ export const AccountsScreen: React.FC = () => {
                         </View>
 
                         <View style={styles.modalBody}>
+                            {/* Preset Options */}
                             <View style={styles.inputSection}>
                                 <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-                                    Start Date
+                                    Quick Select
                                 </Text>
-                                <TouchableOpacity
-                                    style={[styles.dateInput, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
-                                    onPress={() => setShowStartPicker(true)}
-                                >
-                                    <Ionicons name="calendar" size={20} color={colors.primary} />
-                                    <Text style={[styles.dateText, { color: colors.text }]}>
-                                        {formatDate(exportStartDate)}
-                                    </Text>
-                                </TouchableOpacity>
-                                {showStartPicker && (
-                                    <DateTimePicker
-                                        value={exportStartDate}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={(event, date) => {
-                                            setShowStartPicker(false);
-                                            if (date) setExportStartDate(date);
-                                        }}
-                                    />
-                                )}
+                                <View style={styles.presetGrid}>
+                                    {datePresets.map((preset) => (
+                                        <TouchableOpacity
+                                            key={preset.key}
+                                            style={[
+                                                styles.presetButton,
+                                                { backgroundColor: colors.surfaceVariant, borderColor: colors.border },
+                                                selectedPreset === preset.key && {
+                                                    backgroundColor: colors.primary + '20',
+                                                    borderColor: colors.primary,
+                                                }
+                                            ]}
+                                            onPress={() => applyPreset(preset.key)}
+                                        >
+                                            <Text style={[
+                                                styles.presetButtonText,
+                                                { color: colors.text },
+                                                selectedPreset === preset.key && {
+                                                    color: colors.primary,
+                                                    fontWeight: '600',
+                                                }
+                                            ]}>
+                                                {preset.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
 
-                            <View style={styles.inputSection}>
-                                <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
-                                    End Date
-                                </Text>
-                                <TouchableOpacity
-                                    style={[styles.dateInput, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
-                                    onPress={() => setShowEndPicker(true)}
-                                >
-                                    <Ionicons name="calendar" size={20} color={colors.primary} />
-                                    <Text style={[styles.dateText, { color: colors.text }]}>
-                                        {formatDate(exportEndDate)}
+                            {/* Custom Date Range (shown when Custom is selected or always for fine-tuning) */}
+                            <View style={[styles.customDateSection, selectedPreset !== 'custom' && styles.customDateSectionMuted]}>
+                                <View style={styles.inputSection}>
+                                    <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+                                        Start Date
                                     </Text>
-                                </TouchableOpacity>
-                                {showEndPicker && (
-                                    <DateTimePicker
-                                        value={exportEndDate}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={(event, date) => {
-                                            setShowEndPicker(false);
-                                            if (date) setExportEndDate(date);
+                                    <TouchableOpacity
+                                        style={[styles.dateInput, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
+                                        onPress={() => {
+                                            setSelectedPreset('custom');
+                                            setShowStartPicker(true);
                                         }}
-                                    />
-                                )}
+                                    >
+                                        <Ionicons name="calendar" size={20} color={colors.primary} />
+                                        <Text style={[styles.dateText, { color: colors.text }]}>
+                                            {formatDate(exportStartDate)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {showStartPicker && (
+                                        <DateTimePicker
+                                            value={exportStartDate}
+                                            mode="date"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                            onChange={(event, date) => {
+                                                setShowStartPicker(false);
+                                                if (date) setExportStartDate(date);
+                                            }}
+                                        />
+                                    )}
+                                </View>
+
+                                <View style={styles.inputSection}>
+                                    <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>
+                                        End Date
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={[styles.dateInput, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}
+                                        onPress={() => {
+                                            setSelectedPreset('custom');
+                                            setShowEndPicker(true);
+                                        }}
+                                    >
+                                        <Ionicons name="calendar" size={20} color={colors.primary} />
+                                        <Text style={[styles.dateText, { color: colors.text }]}>
+                                            {formatDate(exportEndDate)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {showEndPicker && (
+                                        <DateTimePicker
+                                            value={exportEndDate}
+                                            mode="date"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                            onChange={(event, date) => {
+                                                setShowEndPicker(false);
+                                                if (date) setExportEndDate(date);
+                                            }}
+                                        />
+                                    )}
+                                </View>
                             </View>
                         </View>
 
@@ -1190,5 +1275,30 @@ const styles = StyleSheet.create({
     iconOptionImage: {
         width: 36,
         height: 36,
+    },
+    presetGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+        marginTop: 8,
+    },
+    presetButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+    },
+    presetButtonText: {
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    customDateSection: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.1)',
+    },
+    customDateSectionMuted: {
+        opacity: 0.7,
     },
 });
