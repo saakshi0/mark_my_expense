@@ -18,11 +18,23 @@ import { expenseRepository } from '../database/repositories/expenseRepository';
 import { accountRepository } from '../database/repositories/accountRepository';
 import { Account, ExpenseWithAccount, CategorySummary } from '../types';
 import { getLast7Days, getStartOfMonth, getToday, formatCurrency } from '../utils/dateUtils';
+import { saveWidgetData } from '../utils/widgetStorage';
+import { useDeepLink } from '../../App';
 
 export const DashboardScreen: React.FC = () => {
     const { colors } = useTheme();
+    const { shouldShowAddExpense, setShouldShowAddExpense } = useDeepLink();
     const [loading, setLoading] = useState(true);
     const [showAddExpense, setShowAddExpense] = useState(false);
+
+    // Handle deep link to open Add Expense modal
+    useEffect(() => {
+        if (shouldShowAddExpense) {
+            setSelectedExpense(null);
+            setShowAddExpense(true);
+            setShouldShowAddExpense(false);
+        }
+    }, [shouldShowAddExpense, setShouldShowAddExpense]);
 
     const [weeklyData, setWeeklyData] = useState<CategorySummary[]>([]);
     const [monthlyData, setMonthlyData] = useState<CategorySummary[]>([]);
@@ -62,6 +74,9 @@ export const DashboardScreen: React.FC = () => {
             setMonthlyTotal(monthTotal);
             setRecentExpenses(recent);
             setAccounts(accts);
+
+            // Sync widget data
+            saveWidgetData(monthTotal);
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
         } finally {

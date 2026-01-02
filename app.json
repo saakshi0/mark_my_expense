@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mark My Expense",
     "slug": "expense_tracker_mobile",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,13 +22,45 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.zenitsu29.expense_tracker_mobile"
+      "package": "com.zenitsu29.expense_tracker_mobile",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "markmyexpense",
+              "host": "app"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "MonthlySpendWidget",
+              "label": "Monthly Spend",
+              "minWidth": "250dp",
+              "minHeight": "100dp",
+              "description": "Shows current month spending",
+              "targetCellWidth": 3,
+              "targetCellHeight": 1
+            }
+          ]
+        }
+      ]
     ],
     "extra": {
       "eas": {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState, createContext, useContext } from 'react';
+import { View, ActivityIndicator, StyleSheet, StatusBar, Linking } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -7,9 +7,23 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
 import { notificationService } from './src/services/notificationService';
 
+// Context to share deep link state across the app
+interface DeepLinkContextType {
+  shouldShowAddExpense: boolean;
+  setShouldShowAddExpense: (value: boolean) => void;
+}
+
+const DeepLinkContext = createContext<DeepLinkContextType>({
+  shouldShowAddExpense: false,
+  setShouldShowAddExpense: () => { },
+});
+
+export const useDeepLink = () => useContext(DeepLinkContext);
+
 const AppContent: React.FC = () => {
   const { colors, isDark } = useTheme();
   const [dbReady, setDbReady] = useState(false);
+  const [shouldShowAddExpense, setShouldShowAddExpense] = useState(false);
 
   useEffect(() => {
     const setupApp = async () => {
@@ -28,6 +42,30 @@ const AppContent: React.FC = () => {
     setupApp();
   }, []);
 
+  // Handle deep links
+  useEffect(() => {
+    const handleDeepLink = (event: { url: string }) => {
+      const url = event.url;
+      if (url.includes('add-expense')) {
+        setShouldShowAddExpense(true);
+      }
+    };
+
+    // Handle app opened via deep link
+    Linking.getInitialURL().then((url) => {
+      if (url && url.includes('add-expense')) {
+        setShouldShowAddExpense(true);
+      }
+    });
+
+    // Handle deep link while app is running
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   if (!dbReady) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -37,7 +75,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <>
+    <DeepLinkContext.Provider value={{ shouldShowAddExpense, setShouldShowAddExpense }}>
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
         backgroundColor={colors.surface}
@@ -45,7 +83,7 @@ const AppContent: React.FC = () => {
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
-    </>
+    </DeepLinkContext.Provider>
   );
 };
 
