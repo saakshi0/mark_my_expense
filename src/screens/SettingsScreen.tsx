@@ -36,9 +36,8 @@ export const SettingsScreen: React.FC = () => {
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [isErasing, setIsErasing] = useState(false);
 
-    // SMS Auto-Track state
+    // SMS Sync state
     const [smsPermissionStatus, setSmsPermissionStatus] = useState<SMSPermissionStatus>({
-        hasReceiveSmsPermission: false,
         hasReadSmsPermission: false,
     });
     const [isRequestingPermission, setIsRequestingPermission] = useState(false);
@@ -109,9 +108,7 @@ export const SettingsScreen: React.FC = () => {
             const granted = await smsListenerService.requestSMSPermissions();
             if (granted) {
                 await loadSMSStatus();
-                // Auto-start listener on permission grant
-                await smsListenerService.startSMSListener();
-                Alert.alert('Success', 'SMS tracking started automatically!');
+                Alert.alert('Success', 'SMS sync permission granted!');
             } else {
                 Alert.alert(
                     'Permission Denied',
@@ -244,7 +241,7 @@ export const SettingsScreen: React.FC = () => {
                 {Platform.OS === 'android' && (
                     <View style={styles.section}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                            SMS Auto-Track
+                            SMS Sync
                         </Text>
                         <View style={[styles.card, { backgroundColor: colors.surface }]}>
                             {/* SMS Permission Status */}
@@ -258,13 +255,13 @@ export const SettingsScreen: React.FC = () => {
                                             SMS Permission
                                         </Text>
                                         <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
-                                            {smsPermissionStatus.hasReceiveSmsPermission && smsPermissionStatus.hasReadSmsPermission
+                                            {smsPermissionStatus.hasReadSmsPermission
                                                 ? '✓ Granted'
-                                                : 'Required for auto-tracking'}
+                                                : 'Required for syncing expenses'}
                                         </Text>
                                     </View>
                                 </View>
-                                {!(smsPermissionStatus.hasReceiveSmsPermission && smsPermissionStatus.hasReadSmsPermission) && (
+                                {!smsPermissionStatus.hasReadSmsPermission && (
                                     <TouchableOpacity
                                         style={[styles.grantButton, { backgroundColor: '#EC4899' }]}
                                         onPress={handleRequestSMSPermission}
