@@ -101,7 +101,7 @@ const CanaraBankPatterns = {
     UPI_AMOUNT_PATTERN: /Rs\.?\s*([\d,]+(?:\.\d{2})?)\s+paid/i,
     DEBIT_PATTERN: /INR\s+([\d,]+(?:\.\d{2})?)\s+has\s+been\s+DEBITED/i,
     UPI_MERCHANT_PATTERN: /\sto\s+([^,]+?)(?:,\s*UPI|\.|-Canara)/i,
-    ACCOUNT_PATTERN: /(?:account|A\/C)\s+(?:XX|X\*+)?(\d{3,4})/i,
+  ACCOUNT_PATTERN: /(?:account|A\/C)\s+(?:X+)(\d{3,4})(?:\s|$)/i,
     BALANCE_PATTERN: /(?:Total\s+)?Avail\.?bal\s+INR\s+([\d,]+(?:\.\d{2})?)/i,
     UPI_REF_PATTERN: /UPI\s+Ref\s+(\d+)/i,
 };
